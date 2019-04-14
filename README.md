@@ -1,3 +1,9 @@
+# Connect SDK Android patched by Ace Stream
+
+Original code is slightly patched to allow integration in Ace Stream application.
+
+Below is the original README
+
 #Connect SDK Android
 
 [![Build Status](https://travis-ci.org/ConnectSDK/Connect-SDK-Android.svg)](https://travis-ci.org/ConnectSDK/Connect-SDK-Android)
