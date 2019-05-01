@@ -550,7 +550,12 @@ public class DiscoveryManager implements ConnectableDeviceListener, DiscoveryPro
         mSearching = false;
 
         for (DiscoveryProvider provider : discoveryProviders) {
-            provider.stop();
+            try {
+                provider.stop();
+            }
+            catch(Throwable e) {
+                Log.e(Util.T, "error while stopping provider", e);
+            }
         }
 
         if (multicastLock.isHeld()) {
