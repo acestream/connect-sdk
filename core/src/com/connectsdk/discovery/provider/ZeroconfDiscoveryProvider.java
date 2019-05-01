@@ -48,6 +48,7 @@ public class ZeroconfDiscoveryProvider implements DiscoveryProvider {
     private static final String HOSTNAME = "connectsdk";
 
     JmDNS jmdns;
+    private final Object mJmdnsLock = new Object();
     InetAddress srcAddress;
 
     private Timer scanTimer;
@@ -216,10 +217,12 @@ public class ZeroconfDiscoveryProvider implements DiscoveryProvider {
             scanTimer = null;
         }
 
-        if (jmdns != null) {
-            for (DiscoveryFilter searchTarget : serviceFilters) {
-                String filter = searchTarget.getServiceFilter();
-                jmdns.removeServiceListener(filter, jmdnsListener);
+        synchronized (mJmdnsLock) {
+            if (jmdns != null) {
+                for (DiscoveryFilter searchTarget : serviceFilters) {
+                    String filter = searchTarget.getServiceFilter();
+                    jmdns.removeServiceListener(filter, jmdnsListener);
+                }
             }
         }
     }
@@ -239,16 +242,18 @@ public class ZeroconfDiscoveryProvider implements DiscoveryProvider {
     @Override
     public void rescan() {
         try {
-            if (jmdns != null) {
-                jmdns.close();
-                jmdns = null;
-            }
-            jmdns = createJmDNS();
+            synchronized (mJmdnsLock) {
+                if (jmdns != null) {
+                    jmdns.close();
+                    jmdns = null;
+                }
+                jmdns = createJmDNS();
 
-            if (jmdns != null) {
-                for (DiscoveryFilter searchTarget : serviceFilters) {
-                    String filter = searchTarget.getServiceFilter();
-                    jmdns.addServiceListener(filter, jmdnsListener);
+                if (jmdns != null) {
+                    for (DiscoveryFilter searchTarget : serviceFilters) {
+                        String filter = searchTarget.getServiceFilter();
+                        jmdns.addServiceListener(filter, jmdnsListener);
+                    }
                 }
             }
         } catch (IOException e) {
