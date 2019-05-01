@@ -135,7 +135,13 @@ public class ZeroconfDiscoveryProvider implements DiscoveryProvider {
             // Required to force serviceResolved to be called again
             // (after the first search)
             //Log.d(Util.T, "serviceAdded: type=" + event.getType() + " name=" + event.getName());
-            jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
+            try {
+                jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
+            }
+            catch(Throwable e) {
+                //TODO: use Logger.wtf
+                Log.e(Util.T, "serviceAdded: error", e);
+            }
         }
     };
 
