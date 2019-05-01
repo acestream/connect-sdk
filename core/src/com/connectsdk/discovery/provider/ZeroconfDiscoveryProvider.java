@@ -256,8 +256,9 @@ public class ZeroconfDiscoveryProvider implements DiscoveryProvider {
                     }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Throwable e) {
+            //TODO: change to Logger.wtf to report such errors
+            Log.e(Util.T, "rescan: error", e);
         }
     }
 
