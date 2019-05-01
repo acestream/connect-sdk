@@ -46,6 +46,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -205,6 +206,7 @@ public class SSDPDiscoveryProvider implements DiscoveryProvider {
 
     @Override
     public void rescan() {
+        if(serviceFilters == null) return;
         if (executorService == null || executorService.isShutdown()) {
             Log.w(Util.T, "There are no filters added");
         } else {
@@ -214,22 +216,29 @@ public class SSDPDiscoveryProvider implements DiscoveryProvider {
                     executorService = Executors.newScheduledThreadPool(poolSize);
                 }
             }
-            for (DiscoveryFilter filter : serviceFilters) {
-                final String message = SSDPClient.getSSDPSearchMessage(filter.getServiceFilter());
-                /* Send 3 times like WindowsMedia */
-                for (int i = 0; i < 3; i++) {
-                    executorService.schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                if (ssdpClient != null)
-                                    ssdpClient.send(message);
-                            } catch (IOException ex) {
-                                Log.e(Util.T, ex.getMessage());
+            try {
+                for (DiscoveryFilter filter : serviceFilters) {
+                    final String message = SSDPClient.getSSDPSearchMessage(filter.getServiceFilter());
+                    /* Send 3 times like WindowsMedia */
+                    for (int i = 0; i < 3; i++) {
+                        executorService.schedule(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    if (ssdpClient != null)
+                                        ssdpClient.send(message);
+                                } catch (IOException ex) {
+                                    Log.e(Util.T, ex.getMessage());
+                                }
                             }
-                        }
-                    }, i, TimeUnit.SECONDS);
+                        }, i, TimeUnit.SECONDS);
+                    }
                 }
+            }
+            catch(RejectedExecutionException e) {
+                // This is thrown when executor is still running previous tasks.
+                // Ignore this error and wait until all pending tasks complete.
+                Log.e(Util.T, "rescan: error: " + e.getMessage());
             }
         }
 
