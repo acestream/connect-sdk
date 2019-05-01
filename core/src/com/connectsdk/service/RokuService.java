@@ -274,14 +274,9 @@ public class RokuService extends DeviceService implements Launcher, MediaPlayer,
                     List<AppInfo> appList = parser.getApplicationList();
 
                     Util.postSuccess(listener, appList);
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                } catch (ParserConfigurationException e) {
-                    e.printStackTrace();
-                } catch (SAXException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Throwable e) {
+                    //TODO: use Logger.wtf
+                    Log.e(Util.T, "failed to get app list", e);
                 }
             }
 
