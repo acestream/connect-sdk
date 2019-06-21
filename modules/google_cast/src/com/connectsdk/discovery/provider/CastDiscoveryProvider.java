@@ -177,6 +177,9 @@ public class CastDiscoveryProvider implements DiscoveryProvider {
             Log.d(Util.T, "handleRouteAdded: name=" + route.getName() + " desc=" + route.getDescription());
 
             CastDevice castDevice = CastDevice.getFromBundle(route.getExtras());
+            if(castDevice == null) return;
+            if(castDevice.getIpAddress() == null) return;
+
             String uuid = castDevice.getDeviceId();
 
             removedUUID.remove(uuid);
